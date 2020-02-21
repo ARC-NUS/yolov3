@@ -48,6 +48,11 @@ if f:
     for k, v in zip(hyp.keys(), np.loadtxt(f[0])):
         hyp[k] = v
 
+"""for sparsity training for Slim YOLO"""
+def updateBN(scale, model):
+    for m in model.modules():
+        if isinstance(m, nn.BatchNorm2d):
+            m.weight.grad.data.add_(scale*torch.sign(m.weight.data))  # L1
 
 def train():
     cfg = opt.cfg
@@ -292,6 +297,8 @@ def train():
 
             # Accumulate gradient for x batches before optimizing
             if ni % accumulate == 0:
+                sparsity = 0.0001
+                updateBN(sparsity, model)
                 optimizer.step()
                 optimizer.zero_grad()
 

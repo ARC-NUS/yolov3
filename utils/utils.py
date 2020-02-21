@@ -4,6 +4,13 @@ import os
 import random
 import shutil
 from pathlib import Path
+from datetime import datetime
+
+"""do this before import cv2"""
+import sys
+ros_path = "/opt/ros/kinetic/lib/python2.7/dist-packages"
+if ros_path in sys.path:
+    sys.path.remove(ros_path)
 
 import cv2
 import matplotlib
@@ -1048,4 +1055,4 @@ def plot_results(start=0, stop=0, bucket='', id=()):  # from utils.utils import 
 
     fig.tight_layout()
     ax[1].legend()
-    fig.savefig('results.png', dpi=200)
+    fig.savefig('results_' + datetime.now().strftime("%d%b%Y_%Hh%Mm%Ss") + '.png', dpi=200) # default: 'results.png'

@@ -15,7 +15,6 @@ def create_modules(module_defs, img_size, arc):
     module_list = nn.ModuleList()
     routs = []  # list of layers which rout to deeper layers
     yolo_index = -1
-
     for i, mdef in enumerate(module_defs):
         modules = nn.Sequential()
         # if i == 0:
