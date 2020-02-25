@@ -297,8 +297,7 @@ def train():
 
             # Accumulate gradient for x batches before optimizing
             if ni % accumulate == 0:
-                sparsity = 0.0001
-                updateBN(sparsity, model)
+                updateBN(opt.sparsity, model)
                 optimizer.step()
                 optimizer.zero_grad()
 
@@ -420,6 +419,7 @@ if __name__ == '__main__':
     parser.add_argument('--adam', action='store_true', help='use adam optimizer')
     parser.add_argument('--single-cls', action='store_true', help='train as single-class dataset')
     parser.add_argument('--var', type=float, help='debug variable')
+    parser.add_argument('--sparsity', type=float, default=0,help="sparsity l1 loss")
     opt = parser.parse_args()
     opt.weights = last if opt.resume else opt.weights
     print(opt)
