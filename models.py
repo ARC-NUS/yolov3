@@ -66,7 +66,9 @@ def create_modules(module_defs, img_size, arc):
             #     modules = nn.Upsample(scale_factor=1/float(mdef[i+1]['stride']), mode='nearest')  # reorg3d
 
         elif mdef['type'] == 'shortcut':  # nn.Sequential() placeholder for 'shortcut' layer
-            filters = output_filters[int(mdef['from'])]
+            #filters = output_filters[int(mdef['from'])]
+            # use the smaller filter no. when merging shortcut layers
+            filters = min(output_filters[-1],output_filters[int(mdef['from'])])
             layer = int(mdef['from'])
             routs.extend([i + layer if layer < 0 else layer])
 
@@ -255,7 +257,9 @@ class Darknet(nn.Module):
                 j = int(mdef['from'])
                 if verbose:
                     print('shortcut adding layer %g-%s to %g-%s' % (j, layer_outputs[j].shape, i - 1, x.shape))
-                x = x + layer_outputs[j]
+                # when combining channels in shortcut layer, take the lower channel count
+                shortcut_channels = min(x.size()[1],layer_outputs[j].size()[1])
+                x = x[:,:shortcut_channels,:,:] + layer_outputs[j][:,:shortcut_channels,:,:]
             elif mtype == 'yolo':
                 output.append(module(x, img_size))
             layer_outputs.append(x if i in self.routs else [])
@@ -330,6 +334,7 @@ def load_darknet_weights(self, weights, cutoff=-1):
     ptr = 0
     for i, (mdef, module) in enumerate(zip(self.module_defs[:cutoff], self.module_list[:cutoff])):
         if mdef['type'] == 'convolutional':
+            print('module',i, module[0])
             conv_layer = module[0]
             if mdef['batch_normalize']:
                 # Load BN bias, weights, running mean and running variance
@@ -361,6 +366,7 @@ def load_darknet_weights(self, weights, cutoff=-1):
             num_w = conv_layer.weight.numel()
             conv_w = torch.from_numpy(weights[ptr:ptr + num_w]).view_as(conv_layer.weight)
             conv_layer.weight.data.copy_(conv_w)
+
             ptr += num_w
 
 

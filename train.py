@@ -83,7 +83,8 @@ def train():
 
     # Initialize model
     model = Darknet(cfg, arc=opt.arc).to(device)
-
+    print('model initialized')
+    model.forward(torch.rand(1,3,288,480).cuda())
     # Optimizer
     pg0, pg1, pg2 = [], [], []  # optimizer parameter groups
     for k, v in dict(model.named_parameters()).items():
